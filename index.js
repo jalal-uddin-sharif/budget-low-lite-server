@@ -7,7 +7,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 //middleware
 app.use(cors({
-    origin: ["https://tourspotter-bb912.web.app", "http://localhost:5173"],
+    origin: ["http://localhost:5173"],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
   }));
   app.use(express.json());
@@ -20,4 +20,58 @@ app.use(cors({
       strict: true,
       deprecationErrors: true,
     },
+  });
+
+  async function run() {
+    try {
+      // Connect the client to the server	(optional starting in v4.7)
+      // await client.connect();
+      const BudgetLowCollection = client.db("BudgetLowLite").collection("Products-data");
+      app.get("/products", async (req, res) => {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+        const search = req.query.search || ''; // Get the search term from the query
+    
+        // Create a search query
+        const searchQuery = search ? { productName: { $regex: search, $options: 'i' } } : {};
+    
+        try {
+            // Fetch filtered products based on search term
+            const products = await BudgetLowCollection.find(searchQuery).skip(skip).limit(limit).toArray();
+            const totalProducts = await BudgetLowCollection.countDocuments(searchQuery);
+            const totalPages = Math.ceil(totalProducts / limit);
+    
+            res.json({
+                products,
+                page,
+                totalPages,
+                hasNextPage: page < totalPages,
+                hasPreviousPage: page > 1,
+            });
+        } catch (error) {
+            console.error("Error fetching products:", error);
+            res.status(500).send("Server error");
+        }
+    });
+    
+    
+      // Send a ping to confirm a successful connection
+      // await client.db("admin").command({ ping: 1 });
+      // console.log(
+      //   "Pinged your deployment. You successfully connected to MongoDB!"
+      // );
+    } finally {
+      // Ensures that the client will close when you finish/error
+      //   await client.close();
+    }
+  }
+  run().catch(console.dir);
+  
+  app.get("/", (req, res) => {
+    res.send("testing sever response");
+  });
+  
+  app.listen(port, () => {
+    console.log(`surver running on port: ${port}`);
   });
