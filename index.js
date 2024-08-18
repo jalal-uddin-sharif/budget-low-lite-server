@@ -32,7 +32,7 @@ async function run() {
             const page = parseInt(req.query.page) || 1;
             const limit = parseInt(req.query.limit) || 10;
             const skip = (page - 1) * limit;
-            const search = req.query.search || ''; // Get the search term from the query
+            const search = req.query.search || ''; 
             const category = req.query.category || '';
             const brand = req.query.brand || '';
             const price = parseInt(req.query.price) || 0;
@@ -83,7 +83,7 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-    res.send("Testing server response");
+    res.send(" server responsed");
 });
 
 app.listen(port, () => {
